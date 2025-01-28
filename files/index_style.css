@@ -1,0 +1,41 @@
+body {
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.login-container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.login-image {
+    background-image: url('lion_sleeping.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 200px;
+    width: 100%;
+}
+
+
+.login-form {
+    padding: 30px;
+}
+
+.login-form label {
+    font-weight: 500;
+}
+
+.login-form .btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+#responseMessage {
+    display: none;
+    margin-top: 10px;
+}
