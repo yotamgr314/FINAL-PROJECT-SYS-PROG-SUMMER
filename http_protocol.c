@@ -5,17 +5,17 @@
 typedef struct { char *name, *value; } header_t;
 static header_t reqhdr[17] = { {"\0", "\0"} };
 
-char    *method,    // "GET" or "POST"
-        *uri,       // "/index.html" things before '?'
-        *qs,        // "a=1&b=2"     things after  '?'
-        *prot;      // "HTTP/1.1"
+char    *method,    
+        *uri,       
+        *qs,        
+        *prot;      
 
-char    *payload;     // for POST
+char    *payload;     
 int      payload_size;
 
 
 
-// get request header
+// brings request header
 char *request_header(const char* name)
 {
     header_t *h = reqhdr;
@@ -25,7 +25,6 @@ char *request_header(const char* name)
     }
     return NULL;
 }
-
 void analyze_http(char* buf ,int rcvd){
 
 	buf[rcvd] = '\0';
@@ -60,7 +59,7 @@ void analyze_http(char* buf ,int rcvd){
         }
 
        
-        t2 = request_header("Content-Length"); // and the related header if there is  
+        t2 = request_header("Content-Length");   
         payload_size = t2 ? atol(t2) : (rcvd-(t-buf));
 
 

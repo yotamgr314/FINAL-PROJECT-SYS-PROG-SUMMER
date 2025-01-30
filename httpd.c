@@ -1,50 +1,46 @@
-#include "httpd.h" // for a custom HTTP server header (contains declarations, macros, etc..).
+#include "httpd.h"
+#include <stdio.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h> // For system calls (fork, dup2, close, pipe, etc..).
-#include <sys/types.h> // Defines data types used in system calls (pid_t, size_t, etc...)
-#include <sys/stat.h> // Provides functions and macros for dealing with file attributes and status (e.g., stat, chmod)
-#include <sys/socket.h> // Socket API (e.g., socket creation, bind, listen, accept).
-#include <arpa/inet.h> // Functions for IP address handling (e.g., inet_ntoa, htons).
-#include <netdb.h>  // Network database functions like getaddrinfo for resolving hostnames and service names
-#include <fcntl.h> // Provides file control options (e.g., non-blocking file descriptors, O_RDONLY, O_WRONLY).
-#include <signal.h> // Signal handling for processes, SIGCHILD, etc..
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <signal.h>
 
-#define CONNMAX 1000 // Maximum number of simultaneous client connections
+#define CONNMAX 1000
 
-// Global variables for server and client management
-static int listenfd; // A global integer variable to store the server's listening socket descriptor.
-static int clients[CONNMAX]; // A global array of integers to store the socket descriptors of connected clients.
-static int clientfd; // A global integer variable to store the current client socket descriptor being handled.
 
-// Function prototypes for server initialization and error handling
-static void error(char *); 
-static void startServer(const char *); // starts the server on the specified port.
-static void respond(int); // handles client's requests. 
+static int listenfd, clients[CONNMAX],clientfd;
+static void error(char *);
+static void startServer(const char *);
+static void respond(int);
 
 
 
-// Main server function loop: listen and handles clients connections.
+
 void serve_forever(const char *PORT)
 {
-    struct sockaddr_in clientaddr; // Structure to obtain the client address information.
-    socklen_t addrlen; // the address length.
-    char c; // Unused variable, potentially for deubbgin or future use.
+    struct sockaddr_in clientaddr;
+    socklen_t addrlen;
+    char c;    
     
-    int slot=0; // variable to track the next available slot for a client
+    int slot=0;
     
+    printf(
+            "Server started %shttp://127.0.0.1:%s%s\n",
+            "\033[92m",PORT,"\033[0m"
+            );
 
-    printf("Server started %shttp://127.0.0.1:%s%s\n","\033[92m",PORT,"\033[0m"); // print a message to indicate the server has started. 
-
-    // Setting all elements to -1 to signify that there is no connected clients.
+    // Setting all elements to -1: signifies there is no client connected
     int i;
     for (i=0; i<CONNMAX; i++)
-    {
         clients[i]=-1;
-    }
-
-    startServer(PORT); // Start the server on the specified port
+    startServer(PORT);
     
     // Ignore SIGCHLD to avoid zombie threads
     signal(SIGCHLD,SIG_IGN);
@@ -75,16 +71,13 @@ void serve_forever(const char *PORT)
 //start server
 void startServer(const char *port)
 {
-    struct addrinfo hints; // A struct used to specify criteria for selecting socket address structures, such as protocol family (IPv4), socket type (TCP), and flags (e.g., passive mode for binding).
-    struct addrinfo *res; //A pointer to a linked list of addrinfo structures returned by `getaddrinfo`. it Stores the result of getaddrinfo, which provides one or more potential socket address structures matching the criteria defined in hints.
-    struct addrinfo *p; // A pointer used to iterate through the linked list in `res` to test each socket address until a valid one is found and successfully bound.
+    struct addrinfo hints, *res, *p;
 
-    // הגדרת כתובת השרת
-    memset (&hints, 0, sizeof(hints)); // Zero out the hints structure
-    hints.ai_family = AF_INET; //  Use IPv4
-    hints.ai_socktype = SOCK_STREAM; // ---> INDICATES ITS A TCP SOCKET ! 
-    hints.ai_flags = AI_PASSIVE; // Bind to all available interfaces.
-    
+    // getaddrinfo for host
+    memset (&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
     if (getaddrinfo( NULL, port, &hints, &res) != 0)
     {
         perror ("getaddrinfo() error");
